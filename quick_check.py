@@ -23,7 +23,7 @@ def quick_check(graph_name=GRAPH_NAME):
                 MATCH (n) RETURN count(n) as total
             $$) as (result agtype);
         """)
-        node_count = cur.fetchone()[0]
+        node_count = int(cur.fetchone()[0])
         print(f"Total nodes: {node_count}")
         
         # Edge count
@@ -32,16 +32,17 @@ def quick_check(graph_name=GRAPH_NAME):
                 MATCH ()-[r]->() RETURN count(r) as total
             $$) as (result agtype);
         """)
-        edge_count = cur.fetchone()[0]
+        edge_count = int(cur.fetchone()[0])
         print(f"Total edges: {edge_count}")
         
         # Node types
         cur.execute(f"""
             SELECT * FROM cypher('{graph_name}', $$
-                MATCH (n)
-                RETURN labels(n)[0] as label, count(n) as count
-                ORDER BY count DESC
-            $$) as (label agtype, count agtype);
+                MATCH (n) 
+                WITH DISTINCT LABELS(n) AS temp, COUNT(n) AS tempCnt
+                UNWIND temp AS label
+                RETURN label, SUM(tempCnt) AS cnt
+            $$) as (label agtype, cnt agtype);
         """)
         
         print("\nNode types:")
@@ -52,9 +53,10 @@ def quick_check(graph_name=GRAPH_NAME):
         cur.execute(f"""
             SELECT * FROM cypher('{graph_name}', $$
                 MATCH ()-[r]->()
-                RETURN type(r) as edge_type, count(r) as count
-                ORDER BY count DESC
-            $$) as (edge_type agtype, count agtype);
+                WITH DISTINCT TYPE(r) AS temp, COUNT(r) AS tempCnt
+                UNWIND temp AS edge_type
+                RETURN edge_type, SUM(tempCnt) as cnt
+            $$) as (edge_type agtype, cnt agtype);
         """)
         
         print("\nEdge types:")
