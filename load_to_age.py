@@ -110,7 +110,7 @@ def create_indexes(graph_name=GRAPH_NAME):
         
         # Get all vertex labels
         cur.execute(f"""
-            SELECT label FROM ag_catalog.ag_label 
+            SELECT name FROM ag_catalog.ag_label 
             WHERE graph = (SELECT graphid FROM ag_catalog.ag_graph WHERE name = '{graph_name}')
             AND kind = 'v';
         """)
