@@ -40,3 +40,19 @@ SELECT * FROM ag_catalog.ag_graph;
 # python venv
 
 python -m venv /venv
+
+
+# delete graph
+
+# Connect to PostgreSQL in Docker
+docker exec -it age-container psql -U postgres -d agdb
+
+# In psql, run:
+LOAD 'age';
+SET search_path = ag_catalog, "$user", public;
+SELECT drop_graph('generated_graph', true);
+
+# Exit
+\q
+
+docker exec -it age-container psql -U postgres -d agdb -c "LOAD 'age'; SET search_path = ag_catalog, '\$user', public; SELECT create_graph('generated_graph');"
